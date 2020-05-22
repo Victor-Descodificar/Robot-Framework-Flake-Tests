@@ -46,12 +46,12 @@ class FlakeTestsReport:
             list_size = len(test_name)
 
             for i in range(list_size):
-                if not test_name[i].text in final_list:
-                    final_list.append([build_number, test_name[i].text, test_result[i].text])
+                test = [build_number, test_name[i].text, test_result[i].text]
+                if test not in final_list:
+                    final_list.append(test)
                 else:
-                    index = final_list.index(test_name[i].text)
-                    final_list.insert(index + 1, test_result[i].text)
-
+                    index = final_list.index(test)
+                    final_list[index].insert(len(test), test[2])
         self.driver.quit()
 
         return final_list
@@ -67,14 +67,17 @@ class FlakeTestsReport:
         test = ''
 
         for fl in final_list:
-            if fl[2].__eq__('PASS'):
-                color = 'MediumSeaGreen'
-            else:
-                color = 'Tomato'
+            results = fl[2:]
+            color_result = ''
+            for r in results:
+                if r.__eq__('PASS'):
+                    color_result = color_result + '<td style = "background-color:MediumSeaGreen;">' + r + '</td>'
+                else:
+                    color_result = color_result + '<td style = "background-color:Tomato;">' + r + '</td>'
 
-            test = test + '<tr><td>' + fl[1] + '</td>' + (int(fl[0]) - first_build) * new_column + '<td style = "background-color:' + color + ';">' + fl[2] + '</td></tr>'
+            test = test + '<tr><td>' + fl[1] + '</td>' + (int(fl[0]) - first_build) * new_column + color_result + '</tr>'
 
-        print('<tr><th>Test Name</th>' + build_header + '</tr>' + test)
+        return '<tr><th>Test Name</th>' + build_header + '</tr>' + test
 
     def output_html(self, tests_result: str):
         header = """
